@@ -28,5 +28,5 @@ Blockchain.prototype.createNewTransaction = function(sender, recipient, amount) 
     this.newTransactions.push(newTransaction);
     return newTransaction;
 };
-
+ 
 module.exports = Blockchain;
