@@ -171,3 +171,538 @@ Ismein:
 
 ---
 
+# 📗 Video 2: Blockchain Implementation Using JavaScript
+
+## 1. Introduction
+
+Is video mein hum JavaScript ki help se Blockchain ka basic structure implement kar rahe hain.
+
+Is code mein mainly 2 functionalities hain:
+
+1. **Create New Block:** Blockchain mein ek naya block create aur add karna.
+2. **Create New Transaction:** Blockchain ke liye ek new transaction create karna.
+
+---
+
+## 2. Complete Code
+
+```javascript
+function Blockchain() {
+    this.chain = [];
+    this.newTransactions = [];
+}
+
+Blockchain.prototype.createNewBlock = function(nonce, previousBlockHash, hash) {
+    const newBlock = {
+        height: this.chain.length + 1,
+        timestamp: Date.now(),
+        transactions: this.newTransactions,
+        nonce: nonce,
+        hash: hash,
+        previousBlockHash: previousBlockHash
+    };
+
+    this.chain.push(newBlock);
+    return newBlock;
+}
+
+Blockchain.prototype.createNewTransaction = function(sender, recipient, amount) {
+    const newTransaction = {
+        sender: sender,
+        recipient: recipient,
+        amount: amount
+    };
+
+    this.newTransactions.push(newTransaction);
+    return newTransaction;
+};
+
+module.exports = Blockchain;
+```
+
+---
+
+## 3. Understanding Blockchain Constructor
+```javascript
+function Blockchain() {
+    this.chain = [];
+    this.newTransactions = [];
+}
+```
+
+Yahan `Blockchain` naam ka ek constructor function create kiya gaya hai.
+
+Constructor function ka use objects create karne ke liye hota hai.
+
+Iske andar 2 properties hain:
+
+### A. this.chain = []
+
+- `chain` ek array hai.
+- Is array mein blockchain ke saare blocks store honge.
+- Starting mein array empty hota hai, kyunki abhi koi block create nahi hua hai.
+
+Example:
+
+```javascript
+this.chain = [];
+```
+
+Initially:
+```javascript
+chain = []
+```
+
+Jab naye blocks create honge:
+```javascript
+chain = [
+    block1,
+    block2,
+    block3
+]
+```
+
+### B. this.newTransactions = []
+- Is array mein pending transactions store hoti hain.
+- Jab users new transactions create karte hain, toh wo is array mein add hoti hain.
+- Jab naya block create hota hai, toh pending transactions us block mein include hoti hain.
+
+Example:
+
+```javascript
+this.newTransactions = [];
+```
+
+After creating two transactions:
+```javascript
+newTransactions = [
+    {
+        sender: "Rahul",
+        recipient: "Amit",
+        amount: 500
+    },
+    {
+        sender: "Amit",
+        recipient: "Priya",
+        amount: 200
+    }
+]
+```
+
+**Remember:**
+- `chain` = Saare blocks ka record.
+- `newTransactions` = Pending transactions ka record.
+
+---
+
+## 4. Understanding createNewBlock()
+```javascript
+Blockchain.prototype.createNewBlock = function(nonce, previousBlockHash, hash) {
+```
+
+Ye function blockchain mein ek new block create karne ke liye use hota hai.
+
+Ismein 3 parameters pass hote hain:
+
+|     Parameter     |                  Meaning                  |
+|-------------------|-------------------------------------------|
+|       nonce       | Mining process mein use hone wala number. |
+| previousBlockHash |          Previous block ka hash.          |
+|        hash       |          Current block ka hash.           |
+
+### A. Creating a New Block
+```javascript
+const newBlock = {
+    height: this.chain.length + 1,
+    timestamp: Date.now(),
+    transactions: this.newTransactions,
+    nonce: nonce,
+    hash: hash,
+    previousBlockHash: previousBlockHash
+};
+```
+
+Yahan `newBlock` naam ka object create hota hai.
+
+Is object mein 6 properties hain.
+
+### 1. height
+
+```javascript
+height: this.chain.length + 1
+```
+
+- Ye block ka number ya position batata hai.
+- `this.chain.length` se existing blocks ki total quantity pata chalti hai.
+- `+1` new block ki position calculate karta hai.
+
+Example:
+
+Agar chain mein 2 blocks hain:
+
+```javascript
+this.chain.length = 2;
+```
+
+Toh new block ki height hogi:
+
+```javascript
+height = 2 + 1 = 3;
+```
+
+Matlab ye third block hoga.
+
+### 2. timestamp
+
+```javascript
+timestamp: Date.now()
+```
+
+- Ye block create hone ka current time store karta hai.
+- `Date.now()` JavaScript ka built-in method hai.
+- Ye milliseconds mein time return karta hai.
+
+### 3. transactions
+
+```javascript
+transactions: this.newTransactions
+```
+
+- Is property mein pending transactions store hoti hain.
+- `this.newTransactions` array ki transactions new block mein include hoti hain.
+
+Example:
+
+```javascript
+transactions: [
+    {
+        sender: "Rahul",
+        recipient: "Amit",
+        amount: 500
+    }
+]
+```
+
+### 4. nonce
+
+```javascript
+nonce: nonce
+```
+
+Nonce ka full form commonly **Number Used Once** bataya jata hai.
+
+- Ye ek number hota hai.
+- Proof of Work blockchain mein mining ke time nonce ko repeatedly change kiya jata hai.
+- Miner aisa nonce find karta hai jisse required hash condition satisfy ho.
+
+Example:
+
+```javascript
+nonce: 12345
+```
+
+### 5. hash
+
+```javascript
+hash: hash
+```
+
+- Ye current block ka hash store karta hai.
+- Hash ek digital fingerprint ki tarah hota hai.
+- Ye block ke data se generate hota hai.
+
+Example:
+
+```javascript
+hash: "abc123xyz"
+```
+
+### 6. previousBlockHash
+
+```javascript
+previousBlockHash: previousBlockHash
+```
+
+- Ismein previous block ka hash store hota hai.
+- Iski help se current block previous block ke saath connected rehta hai.
+
+Example:
+
+```javascript
+previousBlockHash: "xyz789abc"
+```
+
+### B. Adding Block to Blockchain
+
+```javascript
+this.chain.push(newBlock);
+```
+
+- `push()` JavaScript array ka method hai.
+- Ye array ke end mein new element add karta hai.
+- Yahan new block ko `chain` array mein add kiya ja raha hai.
+
+### C. Returning New Block
+
+```javascript
+return newBlock;
+```
+
+Ye newly created block ko function ke caller ko return karta hai.
+
+---
+
+## 5. Understanding createNewTransaction()
+
+```javascript
+Blockchain.prototype.createNewTransaction = function(sender, recipient, amount) {
+```
+
+Is function ka purpose ek new transaction create karna hai.
+
+Ismein 3 parameters hain:
+
+| Parameter | Meaning |
+|---|---|
+| sender | Jo person paise send kar raha hai. |
+| recipient | Jo person paise receive kar raha hai. |
+| amount | Kitne paise transfer ho rahe hain. |
+
+### A. Creating Transaction Object
+
+```javascript
+const newTransaction = {
+    sender: sender,
+    recipient: recipient,
+    amount: amount
+};
+```
+
+Yahan ek transaction object create hota hai.
+
+Example:
+
+```javascript
+const newTransaction = {
+    sender: "Rahul",
+    recipient: "Amit",
+    amount: 500
+};
+```
+
+Matlab Rahul ne Amit ko ₹500 transfer kiye.
+
+### B. Adding Transaction to Array
+
+```javascript
+this.newTransactions.push(newTransaction);
+```
+
+- `push()` method transaction ko `newTransactions` array mein add karta hai.
+- Jab tak new block create nahi hota, transaction pending rehti hai.
+
+### C. Returning Transaction
+
+```javascript
+return newTransaction;
+```
+
+Ye newly created transaction object ko return karta hai.
+
+---
+
+## 6. Understanding Prototype in JavaScript
+
+```javascript
+Blockchain.prototype.createNewBlock = function() {
+    // Code
+};
+```
+
+JavaScript mein Prototype ek mechanism hai jiske through objects dusre objects ke properties aur methods access kar sakte hain.
+
+Yahan:
+
+- `Blockchain` ek constructor function hai.
+- `prototype` ke through methods define kiye gaye hain.
+- `new Blockchain()` se create hua object in methods ko access kar sakta hai.
+
+Example:
+
+```javascript
+const bitcoin = new Blockchain();
+
+bitcoin.createNewTransaction("Rahul", "Amit", 500);
+```
+
+**Benefits of Prototype:**
+
+Agar hum multiple Blockchain objects create karte hain, toh har object ke liye methods ki separate copy create nahi hoti. Sabhi objects same prototype methods share kar sakte hain.
+
+---
+
+## 7. Understanding module.exports
+
+```javascript
+module.exports = Blockchain;
+```
+
+- Node.js mein `module.exports` ka use function, object ya variable ko dusri file mein export karne ke liye hota hai.
+- Isse hum `Blockchain` constructor ko kisi dusri file mein import karke use kar sakte hain.
+
+Example:
+
+**blockchain.js**
+
+```javascript
+module.exports = Blockchain;
+```
+
+**dev/test.js**
+
+```javascript
+const Blockchain = require('../blockchain');
+
+const bitcoin = new Blockchain();
+```
+
+Ab hum `bitcoin` object ke through Blockchain ke methods use kar sakte hain.
+
+---
+
+## 8. Complete Working Example
+
+```javascript
+const Blockchain = require('./blockchain');
+
+const bitcoin = new Blockchain();
+
+// Create first transaction
+bitcoin.createNewTransaction("Rahul", "Amit", 500);
+
+// Create second transaction
+bitcoin.createNewTransaction("Amit", "Priya", 200);
+
+// Create first block
+const block1 = bitcoin.createNewBlock(
+    12345,
+    "000000000000",
+    "abc123"
+);
+
+console.log(block1);
+```
+
+### Expected Output (Simplified)
+
+```javascript
+{
+    height: 1,
+    timestamp: 1790000000000,
+    transactions: [
+        {
+            sender: "Rahul",
+            recipient: "Amit",
+            amount: 500
+        },
+        {
+            sender: "Amit",
+            recipient: "Priya",
+            amount: 200
+        }
+    ],
+    nonce: 12345,
+    hash: "abc123",
+    previousBlockHash: "000000000000"
+}
+```
+
+*Note: Timestamp aur hashes illustrative hain. Actual execution mein values different hongi.*
+
+---
+
+## 9. Complete Execution Flow
+
+1. `new Blockchain()` se blockchain object create hota hai.
+2. `chain` aur `newTransactions` empty arrays initialize hote hain.
+3. `createNewTransaction()` call hota hai.
+4. Transaction object create hota hai.
+5. Transaction `newTransactions` array mein add hoti hai.
+6. `createNewBlock()` call hota hai.
+7. New block object create hota hai.
+8. Pending transactions block mein include hoti hain.
+9. Block `chain` array mein add ho jata hai.
+
+---
+
+## 10. Why Previous Block Hash?
+
+Blockchain mein har new block ke andar previous block ka hash store hota hai.
+
+Example:
+
+| Block | Previous Block Hash | Current Hash |
+|---|---|---|
+| Block 1 | 000000 | ABC123 |
+| Block 2 | ABC123 | XYZ456 |
+| Block 3 | XYZ456 | PQR789 |
+
+Is tarah har block apne previous block se connected rehta hai.
+
+Agar kisi previous block ka data change hota hai, toh uska hash change ho sakta hai. Isse subsequent blocks ke stored previous hashes match nahi karenge.
+
+Ye blockchain mein tampering detect karne mein help karta hai.
+
+---
+
+## 11. Important Observation: Transaction Array Reset
+
+Original code mein ek important issue hai:
+
+```javascript
+transactions: this.newTransactions
+```
+
+Block create hone ke baad `newTransactions` array reset nahi kiya gaya hai.
+
+### Problem
+
+Maan lo:
+
+1. First block mein Rahul → Amit ki ₹500 transaction add hui.
+2. First block create ho gaya.
+3. Ab Amit → Priya ki ₹200 transaction add hui.
+4. Second block create hua.
+
+Agar array reset nahi karte, toh second block mein first aur second dono transactions aa jayengi.
+
+### Solution
+
+```javascript
+Blockchain.prototype.createNewBlock = function(nonce, previousBlockHash, hash) {
+
+    const newBlock = {
+        height: this.chain.length + 1,
+        timestamp: Date.now(),
+        transactions: this.newTransactions,
+        nonce: nonce,
+        hash: hash,
+        previousBlockHash: previousBlockHash
+    };
+
+    this.chain.push(newBlock);
+
+    this.newTransactions = [];
+
+    return newBlock;
+};
+```
+
+```javascript
+this.newTransactions = [];
+```
+
+Ye line new empty array create karti hai, taaki next block mein sirf new pending transactions add hon.
+
+---
+
