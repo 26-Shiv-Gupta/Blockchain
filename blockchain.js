@@ -39,7 +39,7 @@ Blockchain.prototype.generateHash = function(previousBlockHash, currentBlockData
 
 Blockchain.prototype.proofOfWork = function(previousBlockHash, currentBlockData) {
     let nonce = 0;
-    const hash = this.generateHash(previousBlockHash, currentBlockData, nonce);
+    let hash = this.generateHash(previousBlockHash, currentBlockData, nonce);
     while (hash.substring(0, 4) !== '0000') {
         nonce++;
         hash = this.generateHash(previousBlockHash, currentBlockData, nonce);

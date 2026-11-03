@@ -706,3 +706,242 @@ Ye line new empty array create karti hai, taaki next block mein sirf new pending
 
 ---
 
+# Video 3 – SHA-256 Hashing and Proof of Work (PoW)
+
+## 1. SHA-256 Hashing
+
+```javascript
+const sha256 = require('sha256');
+```
+
+SHA-256 ek cryptographic hashing algorithm hai jo input data ko fixed-length 256-bit hash mein convert karta hai.
+
+- Output hexadecimal format mein 64 characters ka hota hai.
+- Same input par same hash generate hota hai.
+- Input mein small change hone par hash completely different ho sakta hai.
+- Hash se original data directly recover nahi kar sakte.
+
+## 2. generateHash() Function
+
+```javascript
+Blockchain.prototype.generateHash = function(previousBlockHash, currentBlockData, nonce) {
+    const stringData = previousBlockHash + nonce.toString() + JSON.stringify(currentBlockData);
+    const hash = sha256(stringData);
+    return hash;
+};
+```
+
+**Purpose:** Previous block hash, current block data aur nonce ko combine karke SHA-256 hash generate karna.
+
+### Parameters
+
+1. `previousBlockHash`: Previous block ka hash.
+2. `currentBlockData`: Current block mein store hone wala data, jaise transactions.
+3. `nonce`: Ek number jo hashing input ko change karne ke liye use hota hai.
+
+### Step-by-step explanation
+
+**Step 1: Data combine karna**
+
+```javascript
+const stringData = previousBlockHash + nonce.toString() + JSON.stringify(currentBlockData);
+```
+
+- `previousBlockHash` ko input mein add kiya.
+- `nonce.toString()` nonce ko string mein convert karta hai.
+- `JSON.stringify()` JavaScript object ko JSON string mein convert karta hai.
+
+Teeno values combine hokar ek single string banati hain.
+
+**Step 2: Hash generate karna**
+
+```javascript
+const hash = sha256(stringData);
+```
+
+Combined string ka SHA-256 hash generate hota hai.
+
+**Step 3: Hash return karna**
+
+```javascript
+return hash;
+```
+
+Generated hash return ho jaata hai.
+
+## 3. Proof of Work (PoW)
+
+Proof of Work ek consensus mechanism hai jisme miners ko ek mathematical puzzle solve karna hota hai.
+
+Is process mein miners different nonce values try karte hain, jab tak required condition satisfy karne wala hash nahi mil jaata.
+
+### proofOfWork() Function
+
+```javascript
+Blockchain.prototype.proofOfWork = function(previousBlockHash, currentBlockData) {
+    let nonce = 0;
+    let hash = this.generateHash(previousBlockHash, currentBlockData, nonce);
+
+    while (hash.substring(0, 4) !== '0000') {
+        nonce++;
+        hash = this.generateHash(previousBlockHash, currentBlockData, nonce);
+    }
+
+    return nonce;
+};
+```
+
+**Purpose:** Aisa nonce find karna jisse generated hash ke first four characters `0000` hon.
+
+### Step-by-step explanation
+
+**Step 1: Nonce initialize karna**
+
+```javascript
+let nonce = 0;
+```
+
+Initially nonce ki value 0 rakhi gayi hai.
+
+**Step 2: Initial hash generate karna**
+
+```javascript
+let hash = this.generateHash(previousBlockHash, currentBlockData, nonce);
+```
+
+Nonce ki initial value ke saath hash generate hota hai.
+
+**Step 3: Hash condition check karna**
+
+```javascript
+while (hash.substring(0, 4) !== '0000')
+```
+
+- `substring(0, 4)` hash ke first four characters return karta hai.
+- Agar first four characters `0000` nahi hain, toh loop continue hota hai.
+- Jab hash `0000` se start hota hai, loop stop ho jaata hai.
+
+**Step 4: Nonce increase karna**
+
+```javascript
+nonce++;
+```
+
+Har failed attempt ke baad nonce ki value 1 se increase hoti hai.
+
+**Step 5: New hash generate karna**
+
+```javascript
+hash = this.generateHash(previousBlockHash, currentBlockData, nonce);
+```
+
+Updated nonce ke saath new hash generate hota hai.
+
+Ye process tab tak repeat hota hai jab tak required hash nahi milta.
+
+**Step 6: Nonce return karna**
+
+```javascript
+return nonce;
+```
+
+Jis nonce se required hash generate hua, wahi return hota hai.
+
+## 4. Proof of Work Example
+
+Suppose hume aisa hash chahiye jo `0000` se start ho.
+
+| Attempt | Nonce | Generated Hash (illustrative) | Result |
+|---|---:|---|---|
+| 1 | 0 | `A12F...` | Failed |
+| 2 | 1 | `B89C...` | Failed |
+| 3 | 2 | `91AB...` | Failed |
+| 4 | 3 | `0000A...` | Success |
+
+Yahan nonce `3` par required condition satisfy ho gayi.
+
+*Note: Ye example samjhane ke liye hai. Actual hashes alag honge.*
+
+## 5. Difficulty Level
+
+```javascript
+hash.substring(0, 4) === '0000'
+```
+
+Yahan hash ke first four characters zero hone chahiye.
+
+Is condition ko mining difficulty kehte hain.
+
+- 2 leading zeros: comparatively easy.
+- 4 leading zeros: more difficult.
+- 6 leading zeros: even more difficult.
+
+Jitne zyada leading zeros required honge, utne zyada nonce attempts ki expected requirement hogi.
+
+## 6. Difference Between generateHash() and proofOfWork()
+
+| generateHash() | proofOfWork() |
+|---|---|
+| Hash generate karta hai | Correct nonce find karta hai |
+| SHA-256 use karta hai | generateHash() ko repeatedly call karta hai |
+| Previous hash, data aur nonce leta hai | Previous hash aur current data leta hai |
+| Hash return karta hai | Nonce return karta hai |
+
+## 7. Complete Updated Blockchain Code
+
+```javascript
+const sha256 = require('sha256');
+
+function Blockchain() {
+    this.chain = [];
+    this.newTransactions = [];
+}
+
+Blockchain.prototype.createNewBlock = function(nonce, previousBlockHash, hash) {
+    const newBlock = {
+        height: this.chain.length + 1,
+        timestamp: Date.now(),
+        transactions: this.newTransactions,
+        nonce: nonce,
+        hash: hash,
+        previousBlockHash: previousBlockHash
+    };
+
+    this.chain.push(newBlock);
+    this.newTransactions = [];
+
+    return newBlock;
+};
+
+Blockchain.prototype.createNewTransaction = function(sender, recipient, amount) {
+    const newTransaction = {
+        sender: sender,
+        recipient: recipient,
+        amount: amount
+    };
+
+    this.newTransactions.push(newTransaction);
+
+    return newTransaction;
+};
+
+Blockchain.prototype.generateHash = function(previousBlockHash, currentBlockData, nonce) {
+    const stringData = previousBlockHash + nonce.toString() + JSON.stringify(currentBlockData);
+    const hash = sha256(stringData);
+    return hash;
+};
+
+Blockchain.prototype.proofOfWork = function(previousBlockHash, currentBlockData) {
+    let nonce = 0;
+    let hash = this.generateHash(previousBlockHash, currentBlockData, nonce);
+
+    while (hash.substring(0, 4) !== '0000') {
+        nonce++;
+        hash = this.generateHash(previousBlockHash, currentBlockData, nonce);
+    }
+
+    return nonce;
+};
+
+module.exports = Blockchain;
+```
