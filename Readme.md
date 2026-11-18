@@ -945,3 +945,297 @@ Blockchain.prototype.proofOfWork = function(previousBlockHash, currentBlockData)
 
 module.exports = Blockchain;
 ```
+# Video 4 – Creating Blockchain API Using Node.js and Express
+
+## 1. Changes from Video 3 to Video 4
+
+Video 3 mein humne blockchain ke basic functions implement kiye the:
+
+- `createNewBlock()`
+- `createNewTransaction()`
+- `generateHash()`
+- `proofOfWork()`
+
+Video 4 mein in functions ke saath humne 2 important changes kiye:
+
+1. Genesis Block create kiya.
+2. Express.js use karke Blockchain API banayi.
+
+---
+
+## 2. Understanding api.js
+
+### Complete Code
+
+```javascript
+// api.js
+var express = require('express');
+var app = express();
+const bodyParser = require('body-parser');
+
+app.use(bodyParser.json());
+
+const Blockchain = require('./blockchain');
+const blockchain = new Blockchain();
+
+app.get('/', function (req, res) {
+    res.send(blockchain);
+});
+
+app.post('/transaction', function(req, res) {
+    const data = req.body;
+
+    blockchain.createNewTransaction(
+        data.sender,
+        data.recipent,
+        data.amount
+    );
+
+    res.status(200).json({
+        note: "New transaction created"
+    });
+});
+
+app.listen(3000, function () {
+    console.log('Example app listening on port 3000!');
+});
+```
+
+### Step 1: Import Express
+
+```javascript
+var express = require('express');
+var app = express();
+```
+
+- `express` ek Node.js web framework hai.
+- Iski help se hum server aur API routes create kar sakte hain.
+- `app` Express application ka instance hai.
+
+### Step 2: Import Body Parser
+
+```javascript
+const bodyParser = require('body-parser');
+
+app.use(bodyParser.json());
+```
+
+**Body Parser kya karta hai?**
+
+Body Parser incoming request body ko parse karta hai.
+
+`bodyParser.json()` JSON format mein aane wale request data ko read karke JavaScript object mein convert karta hai.
+
+Example request body:
+
+```json
+{
+    "sender": "Rahul",
+    "recipent": "Amit",
+    "amount": 500
+}
+```
+
+Is data ko hum `req.body` se access kar sakte hain.
+
+### Step 3: Import Blockchain
+
+```javascript
+const Blockchain = require('./blockchain');
+const blockchain = new Blockchain();
+```
+
+- `require('./blockchain')` blockchain.js file ko import karta hai.
+- `new Blockchain()` se Blockchain ka object create hota hai.
+- Is object mein chain aur pending transactions store hongi.
+
+### Step 4: GET API Route
+
+```javascript
+app.get('/', function (req, res) {
+    res.send(blockchain);
+});
+```
+
+**Purpose:** Blockchain ka current data return karna.
+
+- `app.get()` GET request handle karta hai.
+- `/` API ka endpoint hai.
+- `req` request object hai.
+- `res` response object hai.
+- `res.send(blockchain)` blockchain object client ko return karta hai.
+
+Example:
+
+```text
+GET http://localhost:3000/
+```
+
+Is endpoint ko browser ya Postman se access kar sakte hain.
+
+### Step 5: POST API Route
+
+```javascript
+app.post('/transaction', function(req, res) {
+    const data = req.body;
+
+    blockchain.createNewTransaction(
+        data.sender,
+        data.recipent,
+        data.amount
+    );
+
+    res.status(200).json({
+        note: "New transaction created"
+    });
+});
+```
+
+**Purpose:** Blockchain mein new transaction create karna.
+
+- `app.post()` POST request handle karta hai.
+- `/transaction` API endpoint hai.
+- `req.body` request se aaya hua data contain karta hai.
+- `createNewTransaction()` blockchain mein transaction add karta hai.
+- `res.status(200)` successful HTTP response status set karta hai.
+- `res.json()` JSON response return karta hai.
+
+**Example request:**
+
+```text
+POST http://localhost:3000/transaction
+```
+
+Request Body:
+
+```json
+{
+    "sender": "Rahul",
+    "recipent": "Amit",
+    "amount": 500
+}
+```
+
+Response:
+
+```json
+{
+    "note": "New transaction created"
+}
+```
+
+**Important:** Is code mein API request ke andar recipient field ka naam `recipent` rakha gaya hai. Request bhejte waqt bhi isi spelling ka use karna hoga.
+
+### Step 6: Start Express Server
+
+```javascript
+app.listen(3000, function () {
+    console.log('Example app listening on port 3000!');
+});
+```
+
+- `app.listen()` server start karta hai.
+- `3000` server ka port number hai.
+- Server start hone ke baad hum `localhost:3000` par API access kar sakte hain.
+
+---
+
+## 3. Changes in blockchain.js
+
+Video 4 mein blockchain.js ke andar ek important change kiya gaya hai: **Genesis Block creation**.
+
+### Updated Constructor Function
+
+```javascript
+function Blockchain() {
+    this.chain = [];
+    this.newTransactions = [];
+
+    this.createNewBlock(100, '1234567890', '5464445456');
+}
+```
+
+### What is Genesis Block?
+
+Genesis Block blockchain ka first block hota hai.
+
+- Ye blockchain ka starting block hai.
+- Isse pehle blockchain mein koi block nahi hota.
+- Iska height `1` hota hai.
+- Ye blockchain initialize hote hi create kiya jaata hai.
+
+### Understanding the Code
+
+```javascript
+this.chain = [];
+this.newTransactions = [];
+```
+
+Initially:
+
+- `chain` empty array hoti hai.
+- `newTransactions` empty array hoti hai.
+
+```javascript
+this.createNewBlock(100, '1234567890', '5464445456');
+```
+
+Ye constructor ke andar `createNewBlock()` function call karta hai.
+
+Parameters:
+
+| Parameter | Value | Meaning |
+|---|---|---|
+| nonce | `100` | Initial block ka nonce |
+| previousBlockHash | `1234567890` | Initial block ka previous hash value |
+| hash | `5464445456` | Initial block ka hash value |
+
+Is function ke call hone se first block create hokar `chain` array mein add ho jaata hai.
+
+**Note:** Is video mein Genesis Block ke liye nonce aur hash ki values hardcoded hain. Ye actual Proof of Work se generate nahi ki gayi hain.
+
+---
+
+## 4. Understanding the Updated Blockchain Flow
+
+Jab API server start hota hai:
+
+1. `api.js` Blockchain module import karta hai.
+2. `new Blockchain()` execute hota hai.
+3. Constructor `chain` aur `newTransactions` initialize karta hai.
+4. Constructor `createNewBlock()` call karta hai.
+5. Genesis Block blockchain mein add ho jaata hai.
+6. Express server port 3000 par start ho jaata hai.
+
+### Transaction Flow
+
+Jab client `/transaction` endpoint par POST request bhejta hai:
+
+1. Express request receive karta hai.
+2. Body Parser JSON data parse karta hai.
+3. `req.body` se sender, recipient aur amount read hote hain.
+4. `createNewTransaction()` call hota hai.
+5. Transaction `newTransactions` array mein add hota hai.
+6. API success response return karti hai.
+
+**Important:** Is video mein POST request sirf pending transaction create karti hai. Ye transaction automatically kisi naye block mein mine ya add nahi hoti.
+
+---
+
+## 5. Video 4 – New Concepts
+
+| Concept | Meaning |
+|---|---|
+| Express.js | Node.js web framework |
+| API | Applications ke beech communication ka interface |
+| GET | Server se data retrieve karna |
+| POST | Server ko data send karna |
+| Request (`req`) | Client se aane wali request |
+| Response (`res`) | Server se client ko jaane wala response |
+| `req.body` | Request body ka data |
+| Body Parser | Incoming JSON request body parse karta hai |
+| `app.listen()` | Express server start karta hai |
+| Genesis Block | Blockchain ka first block |
+| Port 3000 | Server ka listening port |
+
+---
