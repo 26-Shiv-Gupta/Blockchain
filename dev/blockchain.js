@@ -1,8 +1,10 @@
+// blockchain.js
 const sha256 = require('sha256');
 
 function Blockchain() {
     this.chain = [];
     this.newTransactions = [];
+    this.createNewBlock(100, '1234567890', '5464445456'); // Create the genesis block
 }
 
 Blockchain.prototype.createNewBlock = function(nonce, previousBlockHash, hash){
