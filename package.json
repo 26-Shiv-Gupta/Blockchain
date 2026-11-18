@@ -16,7 +16,11 @@
   "main": "index.js",
   "scripts": {
     "start": "node dev/api.js",
-    "dev": "nodemon dev/api.js"
+    "node_1": "nodemon --watch dev -e js dev/api.js 5001",
+    "node_2": "nodemon --watch dev -e js dev/api.js 5002",
+    "node_3": "nodemon --watch dev -e js dev/api.js 5003",
+    "node_4": "nodemon --watch dev -e js dev/api.js 5004",
+    "node_5": "nodemon --watch dev -e js dev/api.js 5005"
   },
   "dependencies": {
     "body-parser": "^2.4.0",
