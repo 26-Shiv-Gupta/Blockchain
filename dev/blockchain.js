@@ -1,10 +1,14 @@
 // blockchain.js
 const sha256 = require('sha256');
+const baseUrl = "http://localhost:"
+const port = process.argv[2];
 
 function Blockchain() {
     this.chain = [];
     this.newTransactions = [];
     this.createNewBlock(100, '1234567890', '5464445456'); // Create the genesis block
+    this.networkNodes = [];
+    this.currentNodeUrl = baseUrl+port;
 }
 
 Blockchain.prototype.createNewBlock = function(nonce, previousBlockHash, hash){
