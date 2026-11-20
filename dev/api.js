@@ -24,6 +24,31 @@ app.post('/transaction', function (req, res) {
   res.status(200).json({ note: "New transaction created" })
 })
 
+app.post('/transaction/broadcast', function (req, res) {
+  const newTransaction = blockchain.createNewTransaction(req.body.sender, req.body.recipent, req.body.amount);
+
+  const requestPromises = [];
+  blockchain.networkNodes.forEach(data => {
+    const requestOptions = {
+      uri: data + '/transaction',
+      method: 'POST',
+      body: {
+        sender: req.body.sender,
+        recipent: req.body.recipent,
+        amount: req.body.amount
+      },
+      json: true
+    }
+
+    requestPromises.push(rp(requestOptions))
+  })
+
+  Promise.all(requestPromises)
+    .then(data => {
+      res.status(200).json({note: "Transactions added successfully"})
+    })
+})
+
 app.listen(port, function () {
   console.log('Example app listening on port ' + port);
 })
