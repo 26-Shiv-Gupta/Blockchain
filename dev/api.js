@@ -20,12 +20,12 @@ app.get('/blockchain', function (req, res) {
 
 app.post('/transaction', function (req, res) {
   const data = req.body;
-  blockchain.createNewTransaction(data.sender, data.recipent, data.amount)
+  blockchain.createNewTransaction(data.sender, data.recipient, data.amount)
   res.status(200).json({ note: "New transaction created" })
 })
 
 app.post('/transaction/broadcast', function (req, res) {
-  const newTransaction = blockchain.createNewTransaction(req.body.sender, req.body.recipent, req.body.amount);
+  const newTransaction = blockchain.createNewTransaction(req.body.sender, req.body.recipient, req.body.amount);
 
   const requestPromises = [];
   blockchain.networkNodes.forEach(data => {
@@ -34,7 +34,7 @@ app.post('/transaction/broadcast', function (req, res) {
       method: 'POST',
       body: {
         sender: req.body.sender,
-        recipent: req.body.recipent,
+        recipient: req.body.recipient,
         amount: req.body.amount
       },
       json: true
@@ -52,6 +52,8 @@ app.post('/transaction/broadcast', function (req, res) {
 app.get('/mine', function (req, res) {
   // call the function to create new block
 
+  blockchain.createNewTransaction("00", blockchain.currentNodeUrl, 12.5);
+
   const lastBlock = blockchain.getLastBlock();
   const previousBlockHash = lastBlock.hash;
   const currentBlockData = blockchain.newTransactions;
@@ -59,16 +61,14 @@ app.get('/mine', function (req, res) {
   const hash = blockchain.generateHash(previousBlockHash, currentBlockData, nonce)
   const newBlock = blockchain.createNewBlock(nonce, previousBlockHash, hash);
 
-  res.json(newBlock)
-
   // broadcast it to everyone in network
 
   const requestPromises = [];
   blockchain.networkNodes.forEach(networkNodeUrl => {
     const requestOptions = {
-      uri: networkNodeUrl + 'receive-new-block',
+      uri: networkNodeUrl + '/receive-new-block',
       method: 'POST',
-      body: {newBlock: newBlock},
+      body: { newBlock: newBlock },
       json: true
     };
 
@@ -76,40 +76,27 @@ app.get('/mine', function (req, res) {
   })
 
   Promise.all(requestPromises)
-  .then(data => {
-    const requestOptions = {
-      uri: blockchain.currentNodeUrl + '/transaction/broadcast',
-      method: 'POST',
-      body: {
-        amount: 12.5,
-        sender: "00",
-        recipient: blockchain.currentNodeUrl
-      },
-      json: true
-    }
-
-    return rp(requestOptions)
-  })
-  .then(data => {
-    res.json({
-      note: 'New block mined & broadcast successfully',
-      block: newBlock
+    .then(data => {
+      res.json({
+        note: 'New block mined & broadcast successfully',
+        block: newBlock
+      })
     })
-  })
-
 })
 
-app.post('receive-new-block', function(req, res) {
+app.post('/receive-new-block', function (req, res) {
+  console.log('hello')
   const newBlock = req.body.newBlock;
+  console.log(newBlock)
   const lastBlock = blockchain.getLastBlock();
   const correctHash = lastBlock.hash === newBlock.previousBlockHash;
-  const correctIndex = lastBlock['index'] + 1 === newBlock['index'];
+  const correctIndex = lastBlock['height'] + 1 === newBlock['height'];
 
   if (correctHash && correctIndex) {
     blockchain.chain.push(newBlock);
     // blockchain.pendingTransactions = [];
     res.json({
-      note: 'New block received and accepted', 
+      note: 'New block received and accepted',
       newBlock: newBlock
     })
   } else {
